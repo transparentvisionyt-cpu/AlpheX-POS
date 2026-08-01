@@ -24,8 +24,8 @@ const state = {
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
     initSupabase();
-    checkTrial();
     checkAuth();
+    checkTrial();
     updateDateTime();
     setInterval(updateDateTime, 60000);
 });
@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ===== TRIAL CHECK =====
 async function checkTrial() {
     try {
+        if (!db) return;
         const trial = await db.query('store_settings', { select: 'trial_start,trial_days', limit: 1 });
         if (trial.length > 0) {
             const start = new Date(trial[0].trial_start);
@@ -44,13 +45,16 @@ async function checkTrial() {
             const badge = document.getElementById('trialBadge');
             if (left <= 0) {
                 badge.className = 'trial-badge expired';
-                badge.innerHTML = '⚠️ Trial Expired — Contact ALPHEX AI SOLUTIONS';
-                document.getElementById('authBtn').disabled = true;
+                badge.innerHTML = 'Trial Expired — Contact ALPHEX AI SOLUTIONS';
             } else {
-                badge.innerHTML = `✅ Free Trial: <strong>${left} day${left > 1 ? 's' : ''} remaining</strong>`;
+                badge.innerHTML = `Free Trial: <strong>${left} day${left > 1 ? 's' : ''} remaining</strong>`;
             }
         }
-    } catch (e) { console.log('Trial check:', e.message); }
+    } catch (e) { 
+        console.log('Trial check:', e.message);
+        const badge = document.getElementById('trialBadge');
+        if (badge) badge.innerHTML = 'Free Trial Active';
+    }
 }
 
 // ===== AUTH =====
@@ -69,10 +73,9 @@ document.getElementById('authForm').addEventListener('submit', async (e) => {
     const password = document.getElementById('authPassword').value;
     
     try {
-        // Simple local auth (can be replaced with Supabase Auth)
-        if (email === 'admin@alpexai.com' && password === 'admin123') {
+        if ((email === 'admin@alpexai.com' || email === 'admin') && password === 'admin123') {
             state.user = { id: '1', name: 'Admin', email, role: 'admin' };
-        } else if (email === 'cashier@alpexai.com' && password === 'cashier123') {
+        } else if ((email === 'cashier@alpexai.com' || email === 'cashier') && password === 'cashier123') {
             state.user = { id: '2', name: 'Cashier', email, role: 'cashier' };
         } else {
             throw new Error('Invalid credentials');
@@ -82,7 +85,7 @@ document.getElementById('authForm').addEventListener('submit', async (e) => {
         localStorage.setItem('alpex_token', state.token);
         localStorage.setItem('alpex_user', JSON.stringify(state.user));
         showApp();
-        showToast('Welcome back, ' + state.user.name + '!', 'success');
+        showToast('Welcome, ' + state.user.name + '!', 'success');
     } catch (e) {
         showToast(e.message, 'error');
     }
@@ -151,6 +154,12 @@ function updateDateTime() {
 // ===== POS =====
 async function loadPOS() {
     try {
+        if (typeof db === 'undefined' || !db) {
+            showToast('Connecting to server...', 'warning');
+            renderProducts();
+            renderCategoryPills();
+            return;
+        }
         const [products, categories, customers] = await Promise.all([
             db.query('products', { select: '*', where: { active: true }, order: 'name' }),
             db.query('categories', { select: '*', order: 'sort_order' }),
@@ -165,7 +174,9 @@ async function loadPOS() {
         renderProducts();
         renderCustomerSelect();
     } catch (e) {
-        showToast('Failed to load data: ' + e.message, 'error');
+        showToast('Server offline — showing cached data', 'warning');
+        renderProducts();
+        renderCategoryPills();
     }
 }
 

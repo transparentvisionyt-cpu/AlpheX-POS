@@ -24,7 +24,7 @@ const CONFIG = {
   RECEIPT_FOOTER: "Returns accepted within 7 days with receipt.",
   
   // Trial Settings
-  TRIAL_DAYS: 365,
+  TRIAL_DAYS: 3,
   
   // App Info
   APP_VERSION: "1.0.0",
