@@ -1,0 +1,28 @@
+{
+    "name": "AlpheX POS - ALPHEX AI SOLUTIONS",
+    "short_name": "AlpheX POS",
+    "description": "Mobile Point of Sale & Inventory Management System by ALPHEX AI SOLUTIONS",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0a0a1a",
+    "theme_color": "#6366f1",
+    "orientation": "any",
+    "scope": "/",
+    "icons": [
+        {
+            "src": "icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": ["business", "utilities"],
+    "lang": "en",
+    "dir": "ltr"
+}

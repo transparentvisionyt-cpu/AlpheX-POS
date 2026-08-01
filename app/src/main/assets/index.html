@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a0a1a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="ALPHEX AI SOLUTIONS - Mobile POS & Inventory Management">
+    <title>AlpheX POS</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Auth Screen -->
+    <div id="authScreen" class="screen active">
+        <div class="auth-container">
+            <div class="auth-logo">
+                <div class="logo-icon">⚡</div>
+                <h1>AlpheX POS</h1>
+                <p>ALPHEX AI SOLUTIONS</p>
+            </div>
+            <div class="trial-badge" id="trialBadge"></div>
+            <form id="authForm">
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="authEmail" placeholder="Enter email" required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="authPassword" placeholder="Enter password" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full" id="authBtn">Sign In</button>
+            </form>
+            <div class="auth-footer">
+                <p>Demo: <strong>admin@alpexai.com</strong> / <strong>admin123</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="appScreen" class="screen">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <button class="btn-icon" id="menuBtn" onclick="toggleSidebar()">☰</button>
+                <h1 id="pageTitle">POS</h1>
+            </div>
+            <div class="header-right">
+                <span class="online-dot"></span>
+                <span id="headerDate"></span>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon-sm">⚡</div>
+                <div>
+                    <div class="sidebar-brand">AlpheX POS</div>
+                    <div class="sidebar-sub" id="sidebarUser">Admin</div>
+                </div>
+            </div>
+            <div class="sidebar-nav">
+                <a class="nav-item active" data-view="pos" onclick="loadView('pos')">
+                    <span class="nav-icon">🛒</span><span class="nav-label">Point of Sale</span>
+                </a>
+                <a class="nav-item" data-view="products" onclick="loadView('products')">
+                    <span class="nav-icon">📦</span><span class="nav-label">Products</span>
+                </a>
+                <a class="nav-item" data-view="stock" onclick="loadView('stock')">
+                    <span class="nav-icon">📥</span><span class="nav-label">Receive Stock</span>
+                </a>
+                <a class="nav-item" data-view="inventory" onclick="loadView('inventory')">
+                    <span class="nav-icon">📊</span><span class="nav-label">Inventory</span>
+                </a>
+                <a class="nav-item" data-view="customers" onclick="loadView('customers')">
+                    <span class="nav-icon">👥</span><span class="nav-label">Customers</span>
+                </a>
+                <a class="nav-item" data-view="vendors" onclick="loadView('vendors')">
+                    <span class="nav-icon">🏢</span><span class="nav-label">Vendors</span>
+                </a>
+                <a class="nav-item" data-view="sales" onclick="loadView('sales')">
+                    <span class="nav-icon">🧾</span><span class="nav-label">Sales History</span>
+                </a>
+                <a class="nav-item" data-view="reports" onclick="loadView('reports')">
+                    <span class="nav-icon">📈</span><span class="nav-label">Reports</span>
+                </a>
+                <a class="nav-item" data-view="settings" onclick="loadView('settings')">
+                    <span class="nav-icon">⚙️</span><span class="nav-label">Settings</span>
+                </a>
+            </div>
+            <div class="sidebar-footer">
+                <button class="btn btn-danger btn-sm btn-full" onclick="logout()">Logout</button>
+            </div>
+        </nav>
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+        <!-- Content Area -->
+        <main class="main-content" id="mainContent">
+            <!-- POS View (Default) -->
+            <div class="view active" id="posView">
+                <div class="pos-layout">
+                    <div class="pos-left">
+                        <!-- Scanner Bar -->
+                        <div class="scanner-bar" id="scannerBar">
+                            <span class="scanner-icon">📷</span>
+                            <input type="text" id="barcodeInput" placeholder="Scan barcode or type SKU..." 
+                                   onkeydown="handleBarcode(event)">
+                            <button class="btn btn-sm btn-outline" onclick="openCameraScanner()">📷 Scan</button>
+                        </div>
+                        
+                        <!-- Search -->
+                        <div class="search-bar">
+                            <input type="text" id="productSearch" placeholder="Search products..." oninput="filterProducts()">
+                        </div>
+                        
+                        <!-- Category Filter -->
+                        <div class="category-pills" id="categoryPills">
+                            <button class="pill active" onclick="filterByCategory('all', this)">All</button>
+                        </div>
+                        
+                        <!-- Product Grid -->
+                        <div class="product-grid" id="productGrid"></div>
+                    </div>
+                    
+                    <div class="pos-right">
+                        <!-- Cart -->
+                        <div class="cart-panel">
+                            <div class="cart-header">
+                                <h3>🛒 Cart (<span id="cartCount">0</span>)</h3>
+                                <button class="btn btn-sm btn-outline" onclick="clearCart()">Clear</button>
+                            </div>
+                            
+                            <div class="cart-items" id="cartItems">
+                                <div class="empty-state">
+                                    <div class="empty-icon">🛒</div>
+                                    <p>Cart is empty</p>
+                                </div>
+                            </div>
+                            
+                            <div class="cart-footer">
+                                <div class="cart-summary">
+                                    <div class="summary-row">
+                                        <span>Subtotal</span>
+                                        <span id="cartSubtotal">$ 0</span>
+                                    </div>
+                                    <div class="summary-row">
+                                        <span>Tax (16%)</span>
+                                        <span id="cartTax">$ 0</span>
+                                    </div>
+                                    <div class="summary-row discount-row">
+                                        <span>Discount</span>
+                                        <input type="number" id="discountInput" value="0" min="0" onchange="updateCart()">
+                                    </div>
+                                    <div class="summary-row total-row">
+                                        <span>Total</span>
+                                        <span id="cartTotal">$ 0</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Customer -->
+                                <div class="input-group compact">
+                                    <select id="customerSelect" onchange="selectCustomer(this.value)">
+                                        <option value="">Walk-in Customer</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Payment -->
+                                <div class="payment-methods">
+                                    <button class="pay-btn active" onclick="setPayment('cash', this)">💵 Cash</button>
+                                    <button class="pay-btn" onclick="setPayment('card', this)">💳 Card</button>
+                                    <button class="pay-btn" onclick="setPayment('mobile', this)">📱 Mobile</button>
+                                </div>
+                                
+                                <div class="cash-input" id="cashInput">
+                                    <input type="number" id="amountPaid" placeholder="Amount paid" oninput="calculateChange()">
+                                    <div class="change-display">
+                                        Change: <strong id="changeAmount">$ 0</strong>
+                                    </div>
+                                </div>
+                                
+                                <button class="btn btn-success btn-full btn-lg" onclick="completeSale()">
+                                    ✓ Complete Sale
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products View -->
+            <div class="view" id="productsView">
+                <div class="view-header">
+                    <h2>Products</h2>
+                    <button class="btn btn-primary" onclick="openProductModal()">+ Add Product</button>
+                </div>
+                <div class="search-bar">
+                    <input type="text" placeholder="Search products..." oninput="filterProductsList(this.value)">
+                </div>
+                <div class="table-container" id="productsTable"></div>
+            </div>
+
+            <!-- Stock/Purchase View -->
+            <div class="view" id="stockView">
+                <div class="view-header">
+                    <h2>Receive Stock / Purchase Order</h2>
+                </div>
+                <div class="stock-form card">
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Vendor</label>
+                            <select id="stockVendor"></select>
+                        </div>
+                        <div class="input-group">
+                            <label>Product</label>
+                            <select id="stockProduct" onchange="updateStockPrice()"></select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Quantity</label>
+                            <input type="number" id="stockQty" value="1" min="1">
+                        </div>
+                        <div class="input-group">
+                            <label>Unit Cost</label>
+                            <input type="number" id="stockCost" step="0.01">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Total</label>
+                            <input type="text" id="stockTotal" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>Amount Paid</label>
+                            <input type="number" id="stockPaid" step="0.01">
+                        </div>
+                    </div>
+                    <button class="btn btn-success btn-full" onclick="receiveStock()">✓ Receive Stock</button>
+                </div>
+                <div class="card" style="margin-top:15px;">
+                    <h3>Recent Purchases</h3>
+                    <div class="table-container" id="purchasesTable"></div>
+                </div>
+            </div>
+
+            <!-- Inventory View -->
+            <div class="view" id="inventoryView">
+                <div class="view-header">
+                    <h2>Inventory</h2>
+                    <div class="filter-tabs">
+                        <button class="tab active" onclick="filterInventory('all', this)">All</button>
+                        <button class="tab" onclick="filterInventory('low', this)">Low Stock</button>
+                        <button class="tab" onclick="filterInventory('out', this)">Out of Stock</button>
+                    </div>
+                </div>
+                <div class="table-container" id="inventoryTable"></div>
+            </div>
+
+            <!-- Customers View -->
+            <div class="view" id="customersView">
+                <div class="view-header">
+                    <h2>Customers</h2>
+                    <button class="btn btn-primary" onclick="openContactModal('customer')">+ Add Customer</button>
+                </div>
+                <div class="search-bar">
+                    <input type="text" placeholder="Search customers..." oninput="filterContacts('customer', this.value)">
+                </div>
+                <div class="table-container" id="customersTable"></div>
+            </div>
+
+            <!-- Vendors View -->
+            <div class="view" id="vendorsView">
+                <div class="view-header">
+                    <h2>Vendors</h2>
+                    <button class="btn btn-primary" onclick="openContactModal('vendor')">+ Add Vendor</button>
+                </div>
+                <div class="search-bar">
+                    <input type="text" placeholder="Search vendors..." oninput="filterContacts('vendor', this.value)">
+                </div>
+                <div class="table-container" id="vendorsTable"></div>
+            </div>
+
+            <!-- Sales History View -->
+            <div class="view" id="salesView">
+                <div class="view-header">
+                    <h2>Sales History</h2>
+                    <div class="form-row compact">
+                        <input type="date" id="salesFrom" onchange="filterSales()">
+                        <input type="date" id="salesTo" onchange="filterSales()">
+                        <button class="btn btn-primary btn-sm" onclick="filterSales()">Filter</button>
+                    </div>
+                </div>
+                <div class="table-container" id="salesTable"></div>
+            </div>
+
+            <!-- Reports View -->
+            <div class="view" id="reportsView">
+                <div class="view-header">
+                    <h2>Reports</h2>
+                </div>
+                <div class="stat-cards" id="reportStats"></div>
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>Top Products</h3>
+                        <div id="topProductsReport"></div>
+                    </div>
+                    <div class="card">
+                        <h3>Sales Chart</h3>
+                        <div class="bar-chart" id="salesChart"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings View -->
+            <div class="view" id="settingsView">
+                <div class="view-header">
+                    <h2>Settings</h2>
+                </div>
+                <div class="card">
+                    <h3>Store Information</h3>
+                    <div class="input-group">
+                        <label>Store Name</label>
+                        <input type="text" id="setStoreName" value="GTA Concrete Pumping">
+                    </div>
+                    <div class="input-group">
+                        <label>Address</label>
+                        <input type="text" id="setStoreAddress" value="2578 St Clair Ave, York, ON M6N 1L8, Canada">
+                    </div>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Phone</label>
+                            <input type="text" id="setStorePhone" value="+1 6477789872">
+                        </div>
+                        <div class="input-group">
+                            <label>Email</label>
+                            <input type="email" id="setStoreEmail" value="info@GTAconcretepumping.ca">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Tax Rate (%)</label>
+                            <input type="number" id="setTaxRate" value="13" step="0.1">
+                        </div>
+                        <div class="input-group">
+                            <label>Currency Symbol</label>
+                            <input type="text" id="setCurrency" value="$">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+                </div>
+                <div class="card" style="margin-top:16px;">
+                    <h3>Account</h3>
+                    <p style="color:var(--text3);font-size:13px;margin-bottom:12px;">Logged in as: <strong id="settingsUser"></strong></p>
+                    <button class="btn btn-danger" onclick="logout()">Logout</button>
+                </div>
+                <div class="card" style="margin-top:16px;">
+                    <h3>About</h3>
+                    <p style="color:var(--text3);font-size:13px;">AlpheX POS v1.0.0</p>
+                    <p style="color:var(--text3);font-size:13px;">Built by ALPHEX AI SOLUTIONS</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Camera Scanner Modal -->
+    <div class="modal-overlay" id="scannerModal">
+        <div class="modal scanner-modal">
+            <div class="modal-header">
+                <h3>📷 Scan Barcode</h3>
+                <button class="btn-close" onclick="closeScanner()">✕</button>
+            </div>
+            <div class="scanner-viewport">
+                <video id="scannerVideo" autoplay playsinline></video>
+                <div class="scanner-frame"></div>
+            </div>
+            <div class="scanner-result" id="scannerResult"></div>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal-overlay" id="productModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="productModalTitle">Add Product</h3>
+                <button class="btn-close" onclick="closeModal('productModal')">✕</button>
+            </div>
+            <form id="productForm" onsubmit="saveProduct(event)">
+                <div class="modal-body">
+                    <div class="input-group">
+                        <label>Product Name *</label>
+                        <input type="text" id="prodName" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>SKU *</label>
+                            <input type="text" id="prodSku" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Barcode</label>
+                            <input type="text" id="prodBarcode">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Category</label>
+                        <select id="prodCategory">
+                            <option value="Beverages">Beverages</option>
+                            <option value="Snacks">Snacks</option>
+                            <option value="Groceries">Groceries</option>
+                            <option value="Household">Household</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Clothing">Clothing</option>
+                            <option value="Construction">Construction</option>
+                            <option value="Tools">Tools</option>
+                            <option value="Safety">Safety</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Image URL (optional)</label>
+                        <input type="text" id="prodImage" placeholder="https://example.com/image.jpg">
+                    </div>
+                    <div id="prodImagePreview" style="margin-bottom:12px;display:none;">
+                        <img src="" id="prodImageImg" style="width:100%;max-height:150px;object-fit:cover;border-radius:8px;">
+                    </div>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Purchase Price</label>
+                            <input type="number" id="prodPurchasePrice" step="0.01" value="0">
+                        </div>
+                        <div class="input-group">
+                            <label>Sale Price *</label>
+                            <input type="number" id="prodSalePrice" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Stock Quantity</label>
+                            <input type="number" id="prodStock" value="0">
+                        </div>
+                        <div class="input-group">
+                            <label>Min Stock</label>
+                            <input type="number" id="prodMinStock" value="5">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('productModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div class="modal-overlay" id="contactModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="contactModalTitle">Add Contact</h3>
+                <button class="btn-close" onclick="closeModal('contactModal')">✕</button>
+            </div>
+            <form id="contactForm" onsubmit="saveContact(event)">
+                <div class="modal-body">
+                    <div class="input-group">
+                        <label>Name *</label>
+                        <input type="text" id="contactName" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Email</label>
+                        <input type="email" id="contactEmail">
+                    </div>
+                    <div class="input-group">
+                        <label>Phone</label>
+                        <input type="tel" id="contactPhone">
+                    </div>
+                    <div class="input-group">
+                        <label>Address</label>
+                        <input type="text" id="contactAddress">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('contactModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Receipt Modal -->
+    <div class="modal-overlay" id="receiptModal">
+        <div class="modal receipt-modal">
+            <div class="receipt" id="receiptContent"></div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="printReceipt()">🖨 Print</button>
+                <button class="btn btn-primary" onclick="closeModal('receiptModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Add Product Modal (for scanner) -->
+    <div class="modal-overlay" id="quickAddModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Quick Add Product</h3>
+                <button class="btn-close" onclick="closeModal('quickAddModal')">✕</button>
+            </div>
+            <form id="quickAddForm" onsubmit="saveQuickProduct(event)">
+                <div class="modal-body">
+                    <p class="text-muted">Barcode not found. Add this product quickly:</p>
+                    <div class="input-group">
+                        <label>Barcode</label>
+                        <input type="text" id="quickBarcode" readonly>
+                    </div>
+                    <div class="input-group">
+                        <label>Product Name *</label>
+                        <input type="text" id="quickName" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Category</label>
+                        <select id="quickCategory">
+                            <option value="Other">Other</option>
+                            <option value="Beverages">Beverages</option>
+                            <option value="Snacks">Snacks</option>
+                            <option value="Groceries">Groceries</option>
+                            <option value="Household">Household</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Clothing">Clothing</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Purchase Price</label>
+                            <input type="number" id="quickPurchasePrice" step="0.01" value="0">
+                        </div>
+                        <div class="input-group">
+                            <label>Sale Price *</label>
+                            <input type="number" id="quickSalePrice" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Initial Stock</label>
+                        <input type="number" id="quickStock" value="10">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('quickAddModal')">Cancel</button>
+                    <button type="submit" class="btn btn-success">Save & Add to Cart</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script src="config.js"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/scanner.js"></script>
+</body>
+</html>
