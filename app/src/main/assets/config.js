@@ -28,5 +28,8 @@ const CONFIG = {
   
   // App Info
   APP_VERSION: "1.0.0",
-  APP_NAME: "AlpheX POS"
+  APP_NAME: "AlpheX POS",
+  
+  // AI Agent (get free key at aistudio.google.com/apikey)
+  GEMINI_KEY: ""
 };

@@ -554,6 +554,44 @@
         </div>
     </div>
 
+    <!-- AI Business Agent -->
+    <div class="ai-agent-fab" id="aiAgentFab" onclick="openAgentChat()">
+        <span>🤖</span>
+    </div>
+    
+    <div class="ai-agent-panel" id="agentPanel">
+        <div class="agent-panel-header">
+            <div class="agent-panel-title">
+                <span class="agent-avatar">🤖</span>
+                <div>
+                    <div class="agent-name">Business Assistant</div>
+                    <div class="agent-status-online">Online — GTA Concrete Pumping</div>
+                </div>
+            </div>
+            <button class="btn-close" onclick="closeAgentChat()">✕</button>
+        </div>
+        <div class="agent-messages" id="agentMessages">
+            <div class="agent-msg bot">
+                <div class="agent-msg-avatar">🤖</div>
+                <div class="agent-msg-bubble">
+                    Hi! I'm your Business Assistant for GTA Concrete Pumping. I can help you with:
+                    <br><br>
+                    📊 Sales analysis & reports<br>
+                    📦 Inventory management tips<br>
+                    💰 Pricing & profit optimization<br>
+                    👥 Customer relationship advice<br>
+                    🏗️ Concrete pumping business tips<br>
+                    📈 Growth strategies<br><br>
+                    Ask me anything about your business!
+                </div>
+            </div>
+        </div>
+        <div class="agent-input-area">
+            <input type="text" id="agentInput" placeholder="Ask about your business..." onkeydown="if(event.key==='Enter')sendAgentMsg()">
+            <button class="agent-send-btn" onclick="sendAgentMsg()">➤</button>
+        </div>
+    </div>
+
     <!-- Toast -->
     <div class="toast-container" id="toastContainer"></div>
 
@@ -562,5 +600,6 @@
     <script src="js/supabase-client.js"></script>
     <script src="js/app.js"></script>
     <script src="js/scanner.js"></script>
+    <script src="js/agent.js"></script>
 </body>
 </html>
