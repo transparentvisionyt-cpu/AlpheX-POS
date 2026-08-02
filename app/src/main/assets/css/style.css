@@ -405,11 +405,33 @@ tr:hover td { background: rgba(99,102,241,.03); }
 }
 
 /* ===== Mobile Adjustments ===== */
-@media (max-width: 480px) {
-    .product-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+@media (max-width: 768px) {
+    .product-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
     .stat-cards { grid-template-columns: 1fr 1fr; }
     .form-row { grid-template-columns: 1fr; }
     .view-header { flex-direction: column; align-items: stretch; }
+    
+    .app-header { padding: 10px 12px; }
+    .app-header h1 { font-size: 15px; }
+    
+    .pos-layout { display: flex; flex-direction: column; height: auto; }
+    .pos-left { flex: none; overflow-y: visible; max-height: none; }
+    .pos-right { flex: none; max-width: 100%; }
+    
+    .cart-panel { max-height: none; }
+    .cart-items { max-height: 200px; }
+    
+    .scanner-bar { flex-wrap: wrap; }
+    .scanner-bar input { min-width: 150px; }
+    
+    .main-content { padding-bottom: 80px; }
+}
+
+@media (max-width: 480px) {
+    .product-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .product-card { padding: 10px; }
+    .product-card .prod-name { font-size: 12px; }
+    .product-card .prod-price { font-size: 13px; }
 }
 
 /* ===== AI Business Agent ===== */
